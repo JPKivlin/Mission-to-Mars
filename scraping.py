@@ -7,40 +7,25 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 
 def scrape_all():
-    # 1. Use browser to visit the URL 
-    url = 'https://marshemispheres.com/'
+    # Initiate headless driver for deployment
+    executable_path = {'executable_path': ChromeDriverManager().install()}
+    browser = Browser('chrome', **executable_path, headless=True)
 
-    browser.visit(url)
+    news_title, news_paragraph = mars_news(browser)
 
+    # Run all scraping functions and store results in a dictionary
+    data = {
+        "news_title": news_title,
+        "news_paragraph": news_paragraph,
+        "featured_image": featured_image(browser),
+        "facts": mars_facts(),
+        "last_modified": dt.datetime.now(),
+        "hemispheres": hemispheres(browser)
+    }
 
-    # 2. Create a list to hold the images and titles.
-    hemispheres = {}
-    hemispheres_titles = []
-    hemisphere_image_urls = []
-
-    # 3. Write code to retrieve the image urls and titles for each hemisphere.
-
-    for x in range(3,7):
-        
-        img_full = browser.find_by_tag('img')[x]
-        img_full.click()
-
-        html = browser.html
-        img_soup = soup(html, 'html.parser')
-        
-        img_titles = img_soup.find('h2').get_text()
-        
-        img_url_rel = img_soup.find('a', string="Sample").get('href')
-        img_url = f'https://marshemispheres.com/{img_url_rel}'
-
-        hemispheres_titles.append(img_titles)
-        hemisphere_image_urls.append(img_url)
-        
-
-        back = browser.find_link_by_href('index.html')
-        back.click()
-
-    hemispheres = dict(zip(hemispheres_titles, hemisphere_image_urls))
+    # Stop webdriver and return data
+    browser.quit()
+    return data
 
 
 def mars_news(browser):
@@ -112,6 +97,43 @@ def mars_facts():
 
     # Convert dataframe into HTML format, add bootstrap
     return df.to_html(classes="table table-striped")
+
+
+
+def hemispheres(browser):
+
+    # 1. Use browser to visit the URL 
+    url = 'https://marshemispheres.com/'
+    browser.visit(url)
+
+
+    # 2. Create a list to hold the images and titles.
+    hemispheres = {}
+    hemispheres_titles = []
+    hemisphere_image_urls = []
+
+    # 3. Write code to retrieve the image urls and titles for each hemisphere.
+
+    for x in range(3,7):
+        
+        img_full = browser.find_by_tag('img')[x]
+        img_full.click()
+        html = browser.html
+        img_soup = soup(html, 'html.parser')
+        
+        img_titles = img_soup.find('h2').get_text()
+        
+        img_url_rel = img_soup.find('a', string="Sample").get('href')
+        img_url = f'https://marshemispheres.com/{img_url_rel}'
+        hemispheres_dic = {'img_url': img_url, 'title': img_titles}
+
+        hemisphere_image_urls.append(hemispheres_dic)
+              
+
+        back = browser.find_link_by_href('index.html')
+        back.click()
+    browser.quit()
+    return hemisphere_image_urls
 
 if __name__ == "__main__":
 
