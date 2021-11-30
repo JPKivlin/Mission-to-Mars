@@ -86,26 +86,24 @@ hemisphere_image_urls = []
 # 3. Write code to retrieve the image urls and titles for each hemisphere.
 
 for x in range(3,7):
-       
-    img_full = browser.find_by_tag('img')[x]
-    img_full.click()
+        
+        img_full = browser.find_by_tag('img')[x]
+        img_full.click()
+        html = browser.html
+        img_soup = soup(html, 'html.parser')
+        
+        img_titles = img_soup.find('h2').get_text()
+        
+        img_url_rel = img_soup.find('a', string="Sample").get('href')
+        img_url = f'https://marshemispheres.com/{img_url_rel}'
+        hemispheres_dic = {'img_url': img_url, 'title': img_titles}
 
-    html = browser.html
-    img_soup = soup(html, 'html.parser')
-    
-    img_titles = img_soup.find('h2').get_text()
-    
-    img_url_rel = img_soup.find('a', string="Sample").get('href')
-    img_url = f'https://marshemispheres.com/{img_url_rel}'
+        hemisphere_image_urls.append(hemispheres_dic)
+              
 
-    hemispheres_titles.append(img_titles)
-    hemisphere_image_urls.append(img_url)
-    
-
-    back = browser.find_link_by_href('index.html')
-    back.click()
-
-hemispheres = dict(zip(hemispheres_titles, hemisphere_image_urls))
+        back = browser.find_link_by_href('index.html')
+        back.click()
+browser.quit()
 
 # 4. Print the list that holds the dictionary of each image url and title.
 print(hemispheres)
